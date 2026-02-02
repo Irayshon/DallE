@@ -3,5 +3,6 @@
 #include <gtest/gtest.h>
 
 TEST(MotionPlanningTest, Placeholder) {
-  SUCCEED();
+  mymr::MotionPlanning plan;
+  (void)plan;
 }

@@ -1,0 +1,144 @@
+#include "my_modern_robotics/dynamics.h"
+
+#include <Eigen/Dense>
+#include <gtest/gtest.h>
+#include <vector>
+
+namespace {
+
+struct ThreeLinkExampleData {
+  Eigen::VectorXd thetalist;
+  Eigen::VectorXd dthetalist;
+  Eigen::VectorXd taulist;
+  Eigen::Vector3d g;
+  Eigen::VectorXd Ftip;
+  std::vector<Eigen::MatrixXd> Mlist;
+  std::vector<Eigen::MatrixXd> Glist;
+  Eigen::Matrix<double, 6, 3> Slist;
+};
+
+ThreeLinkExampleData MakeThreeLinkExample() {
+  ThreeLinkExampleData data;
+  data.thetalist.resize(3);
+  data.thetalist << 0.1, 0.1, 0.1;
+
+  data.dthetalist.resize(3);
+  data.dthetalist << 0.1, 0.2, 0.3;
+
+  data.taulist.resize(3);
+  data.taulist << 0.5, 0.6, 0.7;
+
+  data.g = Eigen::Vector3d(0.0, 0.0, -9.8);
+
+  data.Ftip.resize(6);
+  data.Ftip << 1.0, 1.0, 1.0, 1.0, 1.0, 1.0;
+
+  Eigen::Matrix4d M01;
+  M01 << 1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0.089159,
+      0, 0, 0, 1;
+
+  Eigen::Matrix4d M12;
+  M12 << 0, 0, 1, 0.28,
+      0, 1, 0, 0.13585,
+      -1, 0, 0, 0,
+      0, 0, 0, 1;
+
+  Eigen::Matrix4d M23;
+  M23 << 1, 0, 0, 0,
+      0, 1, 0, -0.1197,
+      0, 0, 1, 0.395,
+      0, 0, 0, 1;
+
+  Eigen::Matrix4d M34;
+  M34 << 1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0.14225,
+      0, 0, 0, 1;
+
+  data.Mlist = {M01, M12, M23, M34};
+
+  Eigen::Matrix<double, 6, 6> G1 = Eigen::Matrix<double, 6, 6>::Zero();
+  G1.diagonal() << 0.010267, 0.010267, 0.00666, 3.7, 3.7, 3.7;
+
+  Eigen::Matrix<double, 6, 6> G2 = Eigen::Matrix<double, 6, 6>::Zero();
+  G2.diagonal() << 0.22689, 0.22689, 0.0151074, 8.393, 8.393, 8.393;
+
+  Eigen::Matrix<double, 6, 6> G3 = Eigen::Matrix<double, 6, 6>::Zero();
+  G3.diagonal() << 0.0494433, 0.0494433, 0.004095, 2.275, 2.275, 2.275;
+
+  data.Glist = {G1, G2, G3};
+
+  data.Slist << 1, 0, 0,
+      0, 1, 1,
+      1, 0, 0,
+      0, -0.089, -0.089,
+      1, 0, 0,
+      0, 0, 0.425;
+
+  return data;
+}
+
+}  // namespace
+
+TEST(DynamicsTest, MassMatrixExample) {
+  const auto data = MakeThreeLinkExample();
+
+  Eigen::MatrixXd mass = mymr::Dynamics::MassMatrix(
+      data.thetalist, data.Mlist, data.Glist, data.Slist);
+
+  Eigen::MatrixXd expected(3, 3);
+  expected << 2.25433380e+01, -3.07146754e-01, -7.18426391e-03,
+      -3.07146754e-01, 1.96850717e+00, 4.32157368e-01,
+      -7.18426391e-03, 4.32157368e-01, 1.91630858e-01;
+
+  for (int r = 0; r < expected.rows(); ++r) {
+    for (int c = 0; c < expected.cols(); ++c) {
+      EXPECT_NEAR(mass(r, c), expected(r, c), 1e-6);
+    }
+  }
+}
+
+TEST(DynamicsTest, GravityForcesExample) {
+  const auto data = MakeThreeLinkExample();
+
+  Eigen::VectorXd tau = mymr::Dynamics::GravityForces(
+      data.thetalist, data.g, data.Mlist, data.Glist, data.Slist);
+
+  Eigen::VectorXd expected(3);
+  expected << 28.40331262, -37.64094817, -5.4415892;
+
+  for (int i = 0; i < expected.size(); ++i) {
+    EXPECT_NEAR(tau(i), expected(i), 1e-6);
+  }
+}
+
+TEST(DynamicsTest, VelQuadraticForcesExample) {
+  const auto data = MakeThreeLinkExample();
+
+  Eigen::VectorXd tau = mymr::Dynamics::VelQuadraticForces(
+      data.thetalist, data.dthetalist, data.Mlist, data.Glist, data.Slist);
+
+  Eigen::VectorXd expected(3);
+  expected << 0.26453118, -0.05505157, -0.00689132;
+
+  for (int i = 0; i < expected.size(); ++i) {
+    EXPECT_NEAR(tau(i), expected(i), 1e-6);
+  }
+}
+
+TEST(DynamicsTest, ForwardDynamicsExample) {
+  const auto data = MakeThreeLinkExample();
+
+  Eigen::VectorXd ddthetalist = mymr::Dynamics::ForwardDynamics(
+      data.thetalist, data.dthetalist, data.taulist, data.g, data.Ftip,
+      data.Mlist, data.Glist, data.Slist);
+
+  Eigen::VectorXd expected(3);
+  expected << -0.97392907, 25.58466784, -32.91499212;
+
+  for (int i = 0; i < expected.size(); ++i) {
+    EXPECT_NEAR(ddthetalist(i), expected(i), 1e-6);
+  }
+}

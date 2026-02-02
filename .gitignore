@@ -1,0 +1,9 @@
+build/
+out/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+cmake-build-*/
+.worktrees/

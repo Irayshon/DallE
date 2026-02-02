@@ -15,16 +15,18 @@ Eigen::VectorXd RobotControl::ComputedTorque(
     const std::vector<Eigen::MatrixXd>& Mlist,
     const std::vector<Eigen::MatrixXd>& Glist,
     const Eigen::MatrixXd& Slist,
-    const Eigen::VectorXd& Kp,
-    const Eigen::VectorXd& Ki,
-    const Eigen::VectorXd& Kd) {
+    double Kp,
+    double Ki,
+    double Kd) {
   Eigen::VectorXd e = thetalistd - thetalist;
   Eigen::VectorXd edot = dthetalistd - dthetalist;
-  Eigen::VectorXd u = ddthetalistd + Kp.asDiagonal() * e +
-                      Ki.asDiagonal() * eint + Kd.asDiagonal() * edot;
+  Eigen::VectorXd tau_feedforward =
+      Dynamics::MassMatrix(thetalist, Mlist, Glist, Slist) *
+      (Kp * e + Ki * (eint + e) + Kd * edot);
   Eigen::VectorXd Ftip = Eigen::VectorXd::Zero(6);
-  return InverseDynamics::Compute(thetalist, dthetalist, u, g, Ftip, Mlist,
-                                  Glist, Slist);
+  Eigen::VectorXd tau_inversedyn = InverseDynamics::Compute(
+      thetalist, dthetalist, ddthetalistd, g, Ftip, Mlist, Glist, Slist);
+  return tau_feedforward + tau_inversedyn;
 }
 
 std::vector<Eigen::MatrixXd> RobotControl::SimulateControl(
@@ -38,9 +40,12 @@ std::vector<Eigen::MatrixXd> RobotControl::SimulateControl(
     const Eigen::MatrixXd& thetamatd,
     const Eigen::MatrixXd& dthetamatd,
     const Eigen::MatrixXd& ddthetamatd,
-    const Eigen::VectorXd& Kp,
-    const Eigen::VectorXd& Ki,
-    const Eigen::VectorXd& Kd,
+    const Eigen::Vector3d& gtilde,
+    const std::vector<Eigen::MatrixXd>& Mtildelist,
+    const std::vector<Eigen::MatrixXd>& Gtildelist,
+    double Kp,
+    double Ki,
+    double Kd,
     double dt,
     int intRes) {
   int steps = static_cast<int>(thetamatd.rows());
@@ -69,11 +74,9 @@ std::vector<Eigen::MatrixXd> RobotControl::SimulateControl(
 
     Eigen::VectorXd e = thetalistd - theta;
     eint += e * dt;
-    Eigen::VectorXd u = ddthetalistd + Kp.asDiagonal() * e +
-                        Ki.asDiagonal() * eint +
-                        Kd.asDiagonal() * (dthetalistd - dtheta);
-    Eigen::VectorXd tau = InverseDynamics::Compute(
-        theta, dtheta, u, g, Ftip, Mlist, Glist, Slist);
+    Eigen::VectorXd tau = RobotControl::ComputedTorque(
+        theta, dtheta, eint, thetalistd, dthetalistd, ddthetalistd, gtilde,
+        Mtildelist, Gtildelist, Slist, Kp, Ki, Kd);
 
     for (int j = 0; j < intRes; ++j) {
       Eigen::VectorXd ddthetalist = Dynamics::ForwardDynamics(

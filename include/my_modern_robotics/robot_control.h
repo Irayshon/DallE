@@ -17,9 +17,9 @@ class RobotControl {
       const std::vector<Eigen::MatrixXd>& Mlist,
       const std::vector<Eigen::MatrixXd>& Glist,
       const Eigen::MatrixXd& Slist,
-      const Eigen::VectorXd& Kp,
-      const Eigen::VectorXd& Ki,
-      const Eigen::VectorXd& Kd);
+      double Kp,
+      double Ki,
+      double Kd);
 
   static std::vector<Eigen::MatrixXd> SimulateControl(
       const Eigen::VectorXd& thetalist,
@@ -32,9 +32,12 @@ class RobotControl {
       const Eigen::MatrixXd& thetamatd,
       const Eigen::MatrixXd& dthetamatd,
       const Eigen::MatrixXd& ddthetamatd,
-      const Eigen::VectorXd& Kp,
-      const Eigen::VectorXd& Ki,
-      const Eigen::VectorXd& Kd,
+      const Eigen::Vector3d& gtilde,
+      const std::vector<Eigen::MatrixXd>& Mtildelist,
+      const std::vector<Eigen::MatrixXd>& Gtildelist,
+      double Kp,
+      double Ki,
+      double Kd,
       double dt,
       int intRes);
 };

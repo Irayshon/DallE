@@ -3,6 +3,8 @@
 This project provides a class-based C++ API for core Modern Robotics routines.
 The API is split into focused classes so you can include only what you need.
 
+For a full guide, see the user manual: `docs/user-manual.md`.
+
 ## Class split
 
 - `mymr::Tools` - shared math helpers, SE(3)/so(3) utilities, Jacobians

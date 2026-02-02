@@ -48,49 +48,41 @@ std::vector<Eigen::MatrixXd> RobotControl::SimulateControl(
     double Kd,
     double dt,
     int intRes) {
-  int steps = static_cast<int>(thetamatd.rows());
-  int n = static_cast<int>(thetamatd.cols());
-  Eigen::MatrixXd thetamat(steps, n);
-  Eigen::MatrixXd dthetamat(steps, n);
-  Eigen::VectorXd theta = thetalist;
-  Eigen::VectorXd dtheta = dthetalist;
-  Eigen::VectorXd eint = Eigen::VectorXd::Zero(n);
+  Eigen::MatrixXd FtipmatT = Ftipmat.transpose();
+  Eigen::MatrixXd thetamatdT = thetamatd.transpose();
+  Eigen::MatrixXd dthetamatdT = dthetamatd.transpose();
+  Eigen::MatrixXd ddthetamatdT = ddthetamatd.transpose();
+  int m = static_cast<int>(thetamatdT.rows());
+  int n = static_cast<int>(thetamatdT.cols());
+  Eigen::VectorXd thetacurrent = thetalist;
+  Eigen::VectorXd dthetacurrent = dthetalist;
+  Eigen::VectorXd eint = Eigen::VectorXd::Zero(m);
+  Eigen::MatrixXd taumatT = Eigen::MatrixXd::Zero(m, n);
+  Eigen::MatrixXd thetamatT = Eigen::MatrixXd::Zero(m, n);
 
-  if (steps == 0) {
-    return {thetamat, dthetamat};
-  }
-
-  thetamat.row(0) = theta.transpose();
-  dthetamat.row(0) = dtheta.transpose();
-
-  for (int i = 0; i < steps - 1; ++i) {
-    Eigen::VectorXd thetalistd = thetamatd.row(i).transpose();
-    Eigen::VectorXd dthetalistd = dthetamatd.row(i).transpose();
-    Eigen::VectorXd ddthetalistd = ddthetamatd.row(i).transpose();
-    Eigen::VectorXd Ftip = Eigen::VectorXd::Zero(6);
-    if (Ftipmat.size() != 0) {
-      Ftip = Ftipmat.row(i).transpose();
-    }
-
-    Eigen::VectorXd e = thetalistd - theta;
-    eint += e * dt;
-    Eigen::VectorXd tau = RobotControl::ComputedTorque(
-        theta, dtheta, eint, thetalistd, dthetalistd, ddthetalistd, gtilde,
-        Mtildelist, Gtildelist, Slist, Kp, Ki, Kd);
-
+  for (int i = 0; i < n; ++i) {
+    Eigen::VectorXd taulist = RobotControl::ComputedTorque(
+        thetacurrent, dthetacurrent, eint, thetamatdT.col(i),
+        dthetamatdT.col(i), ddthetamatdT.col(i), gtilde, Mtildelist, Gtildelist,
+        Slist, Kp, Ki, Kd);
     for (int j = 0; j < intRes; ++j) {
       Eigen::VectorXd ddthetalist = Dynamics::ForwardDynamics(
-          theta, dtheta, tau, g, Ftip, Mlist, Glist, Slist);
-      auto next = Dynamics::EulerStep(theta, dtheta, ddthetalist,
+          thetacurrent, dthetacurrent, taulist, g, FtipmatT.col(i), Mlist,
+          Glist, Slist);
+      auto next = Dynamics::EulerStep(thetacurrent, dthetacurrent, ddthetalist,
                                       dt / static_cast<double>(intRes));
-      theta = next.at(0);
-      dtheta = next.at(1);
+      thetacurrent = next.at(0);
+      dthetacurrent = next.at(1);
     }
-
-    thetamat.row(i + 1) = theta.transpose();
-    dthetamat.row(i + 1) = dtheta.transpose();
+    taumatT.col(i) = taulist;
+    thetamatT.col(i) = thetacurrent;
+    eint += dt * (thetamatdT.col(i) - thetacurrent);
   }
 
-  return {thetamat, dthetamat};
+  std::vector<Eigen::MatrixXd> control_traj;
+  control_traj.reserve(2);
+  control_traj.push_back(taumatT.transpose());
+  control_traj.push_back(thetamatT.transpose());
+  return control_traj;
 }
 }  // namespace mymr

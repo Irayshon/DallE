@@ -4,20 +4,34 @@
 #include <gtest/gtest.h>
 #include <vector>
 
-TEST(InverseDynamicsTest, ThreeLinkExample) {
-  Eigen::VectorXd thetalist(3);
-  thetalist << 0.1, 0.1, 0.1;
+namespace {
 
-  Eigen::VectorXd dthetalist(3);
-  dthetalist << 0.1, 0.2, 0.3;
+struct ThreeLinkExampleData {
+  Eigen::VectorXd thetalist;
+  Eigen::VectorXd dthetalist;
+  Eigen::VectorXd ddthetalist;
+  Eigen::Vector3d g;
+  Eigen::VectorXd Ftip;
+  std::vector<Eigen::MatrixXd> Mlist;
+  std::vector<Eigen::MatrixXd> Glist;
+  Eigen::Matrix<double, 6, 3> Slist;
+};
 
-  Eigen::VectorXd ddthetalist(3);
-  ddthetalist << 2.0, 1.5, 1.0;
+ThreeLinkExampleData MakeThreeLinkExample() {
+  ThreeLinkExampleData data;
+  data.thetalist.resize(3);
+  data.thetalist << 0.1, 0.1, 0.1;
 
-  Eigen::Vector3d g(0.0, 0.0, -9.8);
+  data.dthetalist.resize(3);
+  data.dthetalist << 0.1, 0.2, 0.3;
 
-  Eigen::VectorXd Ftip(6);
-  Ftip << 1.0, 1.0, 1.0, 1.0, 1.0, 1.0;
+  data.ddthetalist.resize(3);
+  data.ddthetalist << 2.0, 1.5, 1.0;
+
+  data.g = Eigen::Vector3d(0.0, 0.0, -9.8);
+
+  data.Ftip.resize(6);
+  data.Ftip << 1.0, 1.0, 1.0, 1.0, 1.0, 1.0;
 
   Eigen::Matrix4d M01;
   M01 << 1, 0, 0, 0,
@@ -43,7 +57,7 @@ TEST(InverseDynamicsTest, ThreeLinkExample) {
       0, 0, 1, 0.14225,
       0, 0, 0, 1;
 
-  std::vector<Eigen::MatrixXd> Mlist{M01, M12, M23, M34};
+  data.Mlist = {M01, M12, M23, M34};
 
   Eigen::Matrix<double, 6, 6> G1 = Eigen::Matrix<double, 6, 6>::Zero();
   G1.diagonal() << 0.010267, 0.010267, 0.00666, 3.7, 3.7, 3.7;
@@ -54,22 +68,47 @@ TEST(InverseDynamicsTest, ThreeLinkExample) {
   Eigen::Matrix<double, 6, 6> G3 = Eigen::Matrix<double, 6, 6>::Zero();
   G3.diagonal() << 0.0494433, 0.0494433, 0.004095, 2.275, 2.275, 2.275;
 
-  std::vector<Eigen::MatrixXd> Glist{G1, G2, G3};
+  data.Glist = {G1, G2, G3};
 
-  Eigen::Matrix<double, 6, 3> Slist;
-  Slist << 1, 0, 0,
+  data.Slist << 1, 0, 0,
       0, 1, 1,
       1, 0, 0,
       0, -0.089, -0.089,
       1, 0, 0,
       0, 0, 0.425;
 
+  return data;
+}
+
+}  // namespace
+
+TEST(InverseDynamicsTest, ThreeLinkExample) {
+  const auto data = MakeThreeLinkExample();
+
   Eigen::VectorXd tau =
-      mymr::InverseDynamics::Compute(thetalist, dthetalist, ddthetalist, g,
-                                      Ftip, Mlist, Glist, Slist);
+      mymr::InverseDynamics::Compute(data.thetalist, data.dthetalist,
+                                      data.ddthetalist, data.g, data.Ftip,
+                                      data.Mlist, data.Glist, data.Slist);
 
   Eigen::VectorXd expected(3);
   expected << 74.69616155, -33.06766016, -3.23057314;
+
+  for (int i = 0; i < expected.size(); ++i) {
+    EXPECT_NEAR(tau(i), expected(i), 1e-6);
+  }
+}
+
+TEST(InverseDynamicsTest, GravityOnlyExample) {
+  const auto data = MakeThreeLinkExample();
+  Eigen::VectorXd zeros = Eigen::VectorXd::Zero(data.thetalist.size());
+  Eigen::VectorXd Ftip = Eigen::VectorXd::Zero(6);
+
+  Eigen::VectorXd tau = mymr::InverseDynamics::Compute(
+      data.thetalist, zeros, zeros, data.g, Ftip, data.Mlist, data.Glist,
+      data.Slist);
+
+  Eigen::VectorXd expected(3);
+  expected << 28.40331262, -37.64094817, -5.4415892;
 
   for (int i = 0; i < expected.size(); ++i) {
     EXPECT_NEAR(tau(i), expected(i), 1e-6);

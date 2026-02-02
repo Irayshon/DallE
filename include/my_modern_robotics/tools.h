@@ -6,6 +6,6 @@ namespace mymr {
 class Tools {
  public:
   static bool NearZero(double value);
-  static Eigen::VectorXd Normalize(const Eigen::VectorXd& vector);
+  static Eigen::MatrixXd Normalize(Eigen::MatrixXd V);
 };
 }  // namespace mymr

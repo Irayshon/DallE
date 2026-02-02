@@ -3,6 +3,75 @@
 #include <Eigen/Dense>
 #include <gtest/gtest.h>
 
+namespace {
+void ExpectMatrixNear(const Eigen::MatrixXd& actual,
+                      const Eigen::MatrixXd& expected,
+                      double tol) {
+  ASSERT_EQ(actual.rows(), expected.rows());
+  ASSERT_EQ(actual.cols(), expected.cols());
+  for (int r = 0; r < expected.rows(); ++r) {
+    for (int c = 0; c < expected.cols(); ++c) {
+      EXPECT_NEAR(actual(r, c), expected(r, c), tol);
+    }
+  }
+}
+}  // namespace
+
+TEST(TrajectoryTest, QuinticTimeScalingExpectedValues) {
+  double Tf = 4.0;
+  EXPECT_NEAR(mymr::Trajectory::QuinticTimeScaling(Tf, 0.0), 0.0, 1e-12);
+  EXPECT_NEAR(mymr::Trajectory::QuinticTimeScaling(Tf, Tf / 4.0), 0.103515625,
+              1e-12);
+  EXPECT_NEAR(mymr::Trajectory::QuinticTimeScaling(Tf, Tf / 2.0), 0.5, 1e-12);
+  EXPECT_NEAR(mymr::Trajectory::QuinticTimeScaling(Tf, Tf), 1.0, 1e-12);
+}
+
+TEST(TrajectoryTest, ScrewTrajectoryEndpoints) {
+  Eigen::Matrix4d Xstart = Eigen::Matrix4d::Identity();
+  Eigen::Matrix4d Xend = Eigen::Matrix4d::Identity();
+  Xend(0, 0) = 0.0;
+  Xend(0, 1) = -1.0;
+  Xend(1, 0) = 1.0;
+  Xend(1, 1) = 0.0;
+  Xend(0, 3) = 1.0;
+  Xend(1, 3) = 2.0;
+  Xend(2, 3) = 3.0;
+
+  double Tf = 2.0;
+  int N = 5;
+  int method = 5;
+
+  std::vector<Eigen::MatrixXd> traj =
+      mymr::Trajectory::ScrewTrajectory(Xstart, Xend, Tf, N, method);
+
+  ASSERT_EQ(static_cast<int>(traj.size()), N);
+  ExpectMatrixNear(traj.front(), Xstart, 1e-6);
+  ExpectMatrixNear(traj.back(), Xend, 1e-6);
+}
+
+TEST(TrajectoryTest, CartesianTrajectoryEndpoints) {
+  Eigen::Matrix4d Xstart = Eigen::Matrix4d::Identity();
+  Eigen::Matrix4d Xend = Eigen::Matrix4d::Identity();
+  Xend(0, 0) = 0.0;
+  Xend(0, 1) = -1.0;
+  Xend(1, 0) = 1.0;
+  Xend(1, 1) = 0.0;
+  Xend(0, 3) = -0.5;
+  Xend(1, 3) = 0.25;
+  Xend(2, 3) = 1.5;
+
+  double Tf = 2.0;
+  int N = 5;
+  int method = 5;
+
+  std::vector<Eigen::MatrixXd> traj =
+      mymr::Trajectory::CartesianTrajectory(Xstart, Xend, Tf, N, method);
+
+  ASSERT_EQ(static_cast<int>(traj.size()), N);
+  ExpectMatrixNear(traj.front(), Xstart, 1e-6);
+  ExpectMatrixNear(traj.back(), Xend, 1e-6);
+}
+
 TEST(TrajectoryTest, JointTrajectoryCubicExample) {
   Eigen::VectorXd thetastart(8);
   thetastart << 1, 0, 0, 1, 1, 0.2, 0, 1;
@@ -23,11 +92,5 @@ TEST(TrajectoryTest, JointTrajectoryCubicExample) {
       1.1792, 0.448, 0.5376, 1.0896, 1.896, 1.8128, 0.8064, 1,
       1.2, 0.5, 0.6, 1.1, 2, 2, 0.9, 1;
 
-  ASSERT_EQ(traj.rows(), expected.rows());
-  ASSERT_EQ(traj.cols(), expected.cols());
-  for (int r = 0; r < expected.rows(); ++r) {
-    for (int c = 0; c < expected.cols(); ++c) {
-      EXPECT_NEAR(traj(r, c), expected(r, c), 1e-6);
-    }
-  }
+  ExpectMatrixNear(traj, expected, 1e-6);
 }

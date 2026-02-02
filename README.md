@@ -8,7 +8,8 @@ The API is split into focused classes so you can include only what you need.
 - `mymr::Tools` - shared math helpers, SE(3)/so(3) utilities, Jacobians
 - `mymr::FK` - forward kinematics in body or space frames
 - `mymr::IK` - inverse kinematics in body or space frames
-- `mymr::Dynamics` - mass matrix, forces, forward/inverse dynamics, trajectories
+- `mymr::InverseDynamics` - inverse dynamics solver
+- `mymr::Dynamics` - mass matrix, forces, forward dynamics, trajectories
 - `mymr::Trajectory` - time scaling and trajectory generation
 - `mymr::RobotControl` - computed torque control and simulation helpers
 - `mymr::MotionPlanning` - placeholder for upcoming planning utilities
@@ -63,6 +64,25 @@ std::vector<Eigen::MatrixXd> Mlist;
 std::vector<Eigen::MatrixXd> Glist;
 Eigen::MatrixXd Slist(6, 1);
 Eigen::MatrixXd M = mymr::Dynamics::MassMatrix(thetalist, Mlist, Glist, Slist);
+```
+
+### InverseDynamics
+
+```cpp
+#include <Eigen/Dense>
+#include <vector>
+#include <my_modern_robotics/inverse_dynamics.h>
+
+Eigen::VectorXd thetalist(1);
+Eigen::VectorXd dthetalist(1);
+Eigen::VectorXd ddthetalist(1);
+Eigen::Vector3d g(0.0, 0.0, -9.81);
+Eigen::VectorXd Ftip = Eigen::VectorXd::Zero(6);
+std::vector<Eigen::MatrixXd> Mlist;
+std::vector<Eigen::MatrixXd> Glist;
+Eigen::MatrixXd Slist(6, 1);
+Eigen::VectorXd tau = mymr::InverseDynamics::Compute(
+    thetalist, dthetalist, ddthetalist, g, Ftip, Mlist, Glist, Slist);
 ```
 
 ### Trajectory

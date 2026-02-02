@@ -1,0 +1,8 @@
+PROJECT_NAME           = "myModernRoboticsCpp"
+OUTPUT_DIRECTORY       = docs/doxygen
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+INPUT                  = include
+RECURSIVE              = YES
+EXTRACT_ALL            = YES
+QUIET                  = YES

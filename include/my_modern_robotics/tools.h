@@ -26,5 +26,18 @@ class Tools {
   static Eigen::VectorXd AxisAng6(const Eigen::VectorXd& expc6);
   static Eigen::MatrixXd MatrixExp6(const Eigen::MatrixXd& se3mat);
   static Eigen::MatrixXd MatrixLog6(const Eigen::MatrixXd& T);
+  static Eigen::Matrix3d ProjectToSO3(const Eigen::Matrix3d& R);
+  static Eigen::MatrixXd ProjectToSE3(const Eigen::MatrixXd& T);
+  static double DistanceToSO3(const Eigen::Matrix3d& R);
+  static double DistanceToSE3(const Eigen::MatrixXd& T);
+  static bool TestIfSO3(const Eigen::Matrix3d& R);
+  static bool TestIfSE3(const Eigen::MatrixXd& T);
+  static Eigen::MatrixXd JacobianSpace(const Eigen::MatrixXd& Slist,
+                                       const Eigen::VectorXd& thetalist);
+  static Eigen::MatrixXd JacobianBody(const Eigen::MatrixXd& Blist,
+                                      const Eigen::VectorXd& thetalist);
+  static Eigen::MatrixXd ad(const Eigen::VectorXd& V);
+  static bool IsSingular(const Eigen::MatrixXd& J);
+  static double ConditionNumber(const Eigen::MatrixXd& J);
 };
 }  // namespace mymr

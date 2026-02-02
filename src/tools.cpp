@@ -1,6 +1,7 @@
 #include "my_modern_robotics/tools.h"
 
 #include <cmath>
+#include <limits>
 #include <vector>
 
 namespace {
@@ -193,5 +194,101 @@ Eigen::MatrixXd Tools::MatrixLog6(const Eigen::MatrixXd& T) {
         0, 0, 0, 0;
   }
   return m_ret;
+}
+
+Eigen::Matrix3d Tools::ProjectToSO3(const Eigen::Matrix3d& R) {
+  Eigen::JacobiSVD<Eigen::Matrix3d> svd(R,
+                                       Eigen::ComputeFullU | Eigen::ComputeFullV);
+  Eigen::Matrix3d U = svd.matrixU();
+  Eigen::Matrix3d V = svd.matrixV();
+  Eigen::Matrix3d R_proj = U * V.transpose();
+  if (R_proj.determinant() < 0) {
+    U.col(2) *= -1.0;
+    R_proj = U * V.transpose();
+  }
+  return R_proj;
+}
+
+Eigen::MatrixXd Tools::ProjectToSE3(const Eigen::MatrixXd& T) {
+  Eigen::Matrix3d R = ProjectToSO3(T.block<3, 3>(0, 0));
+  Eigen::Vector3d p = T.block<3, 1>(0, 3);
+  return RpToTrans(R, p);
+}
+
+double Tools::DistanceToSO3(const Eigen::Matrix3d& R) {
+  return (R - ProjectToSO3(R)).norm();
+}
+
+double Tools::DistanceToSE3(const Eigen::MatrixXd& T) {
+  return (T - ProjectToSE3(T)).norm();
+}
+
+bool Tools::TestIfSO3(const Eigen::Matrix3d& R) {
+  return DistanceToSO3(R) < 1e-3;
+}
+
+bool Tools::TestIfSE3(const Eigen::MatrixXd& T) {
+  return DistanceToSE3(T) < 1e-3;
+}
+
+Eigen::MatrixXd Tools::JacobianSpace(const Eigen::MatrixXd& Slist,
+                                     const Eigen::VectorXd& thetalist) {
+  int n = static_cast<int>(thetalist.size());
+  if (n == 0) {
+    return Eigen::MatrixXd(6, 0);
+  }
+
+  Eigen::MatrixXd Js(6, n);
+  Js.col(0) = Slist.col(0);
+  Eigen::MatrixXd T = Eigen::MatrixXd::Identity(4, 4);
+  for (int i = 1; i < n; ++i) {
+    T = T * MatrixExp6(VecTose3(Slist.col(i - 1) * thetalist(i - 1)));
+    Js.col(i) = Adjoint(T) * Slist.col(i);
+  }
+  return Js;
+}
+
+Eigen::MatrixXd Tools::JacobianBody(const Eigen::MatrixXd& Blist,
+                                    const Eigen::VectorXd& thetalist) {
+  int n = static_cast<int>(thetalist.size());
+  if (n == 0) {
+    return Eigen::MatrixXd(6, 0);
+  }
+
+  Eigen::MatrixXd Jb(6, n);
+  Jb.col(n - 1) = Blist.col(n - 1);
+  Eigen::MatrixXd T = Eigen::MatrixXd::Identity(4, 4);
+  for (int i = n - 2; i >= 0; --i) {
+    T = T * MatrixExp6(VecTose3(-Blist.col(i + 1) * thetalist(i + 1)));
+    Jb.col(i) = Adjoint(T) * Blist.col(i);
+  }
+  return Jb;
+}
+
+Eigen::MatrixXd Tools::ad(const Eigen::VectorXd& V) {
+  Eigen::Vector3d omg(V(0), V(1), V(2));
+  Eigen::Vector3d v(V(3), V(4), V(5));
+  Eigen::MatrixXd ad_ret = Eigen::MatrixXd::Zero(6, 6);
+  ad_ret.block<3, 3>(0, 0) = VecToso3(omg);
+  ad_ret.block<3, 3>(3, 0) = VecToso3(v);
+  ad_ret.block<3, 3>(3, 3) = VecToso3(omg);
+  return ad_ret;
+}
+
+bool Tools::IsSingular(const Eigen::MatrixXd& J) {
+  return ConditionNumber(J) > 1e6;
+}
+
+double Tools::ConditionNumber(const Eigen::MatrixXd& J) {
+  if (J.size() == 0) {
+    return 0.0;
+  }
+  Eigen::JacobiSVD<Eigen::MatrixXd> svd(J);
+  auto s = svd.singularValues();
+  double min_sigma = s(s.size() - 1);
+  if (NearZero(min_sigma)) {
+    return std::numeric_limits<double>::infinity();
+  }
+  return s(0) / min_sigma;
 }
 }  // namespace mymr

@@ -38,8 +38,12 @@ if(BUILD_TESTING)
   add_executable(tools_transform_test tests/tools_transform_test.cpp)
   target_link_libraries(tools_transform_test PRIVATE my_modern_robotics GTest::gtest GTest::gtest_main)
 
+  add_executable(tools_jacobian_test tests/tools_jacobian_test.cpp)
+  target_link_libraries(tools_jacobian_test PRIVATE my_modern_robotics GTest::gtest GTest::gtest_main)
+
   include(GoogleTest)
   gtest_discover_tests(api_smoke_test)
   gtest_discover_tests(tools_basic_test)
   gtest_discover_tests(tools_transform_test)
+  gtest_discover_tests(tools_jacobian_test)
 endif()

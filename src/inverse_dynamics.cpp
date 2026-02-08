@@ -1,10 +1,10 @@
-#include "DallE/inverse_dynamics.h"
+#include "WallE/inverse_dynamics.h"
 
-#include "DallE/tools.h"
+#include "WallE/tools.h"
 
 #include <vector>
 
-namespace DallE {
+namespace WallE {
 Eigen::VectorXd InverseDynamics::Compute(
     const Eigen::VectorXd& thetalist,
     const Eigen::VectorXd& dthetalist,
@@ -45,4 +45,4 @@ Eigen::VectorXd InverseDynamics::Compute(
 
   return taulist;
 }
-}  // namespace DallE
+}  // namespace WallE

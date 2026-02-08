@@ -3,7 +3,7 @@
 #include <Eigen/Dense>
 #include <vector>
 
-namespace DallE {
+namespace WallE {
 /**
  * @brief Robot control utilities (computed torque and simulation).
  */
@@ -83,4 +83,4 @@ class RobotControl {
       double dt,
       int intRes);
 };
-}  // namespace DallE
+}  // namespace WallE

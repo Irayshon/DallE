@@ -1,5 +1,5 @@
-#include "DallE/fk.h"
-#include "DallE/ik.h"
+#include "WallE/fk.h"
+#include "WallE/ik.h"
 
 #include <Eigen/Dense>
 #include <cmath>
@@ -39,14 +39,14 @@ TEST(IKTest, BodyAndSpaceExample) {
   thetalist0 << 1.5, 2.5, 3.0;
 
   Eigen::VectorXd thetalist_body = thetalist0;
-  bool success_body = DallE::IK::IKinBody(Blist, M, T, thetalist_body, 1e-3, 1e-3);
+  bool success_body = WallE::IK::IKinBody(Blist, M, T, thetalist_body, 1e-3, 1e-3);
   EXPECT_TRUE(success_body);
-  auto T_body = DallE::FK::FKinBody(M, Blist, thetalist_body);
+  auto T_body = WallE::FK::FKinBody(M, Blist, thetalist_body);
 
   Eigen::VectorXd thetalist_space = thetalist0;
-  bool success_space = DallE::IK::IKinSpace(Slist, M, T, thetalist_space, 1e-3, 1e-3);
+  bool success_space = WallE::IK::IKinSpace(Slist, M, T, thetalist_space, 1e-3, 1e-3);
   EXPECT_TRUE(success_space);
-  auto T_space = DallE::FK::FKinSpace(M, Slist, thetalist_space);
+  auto T_space = WallE::FK::FKinSpace(M, Slist, thetalist_space);
 
   for (int r = 0; r < 4; ++r) {
     for (int c = 0; c < 4; ++c) {
@@ -98,14 +98,14 @@ TEST(IKTest, PlanarTwoLinkTarget) {
   thetalist0 << 0.7, -1.0;
 
   Eigen::VectorXd thetalist_body = thetalist0;
-  bool success_body = DallE::IK::IKinBody(Blist, M, T, thetalist_body, 1e-4, 1e-4);
+  bool success_body = WallE::IK::IKinBody(Blist, M, T, thetalist_body, 1e-4, 1e-4);
   EXPECT_TRUE(success_body);
-  auto T_body = DallE::FK::FKinBody(M, Blist, thetalist_body);
+  auto T_body = WallE::FK::FKinBody(M, Blist, thetalist_body);
 
   Eigen::VectorXd thetalist_space = thetalist0;
-  bool success_space = DallE::IK::IKinSpace(Slist, M, T, thetalist_space, 1e-4, 1e-4);
+  bool success_space = WallE::IK::IKinSpace(Slist, M, T, thetalist_space, 1e-4, 1e-4);
   EXPECT_TRUE(success_space);
-  auto T_space = DallE::FK::FKinSpace(M, Slist, thetalist_space);
+  auto T_space = WallE::FK::FKinSpace(M, Slist, thetalist_space);
 
   for (int r = 0; r < 4; ++r) {
     for (int c = 0; c < 4; ++c) {
@@ -146,27 +146,27 @@ TEST(MPCIKTest, MPCPlanarTwoLinkTrajectory) {
   Eigen::VectorXd theta_c(2);
   theta_c << pi / 3.0, -pi / 3.0;
 
-  Eigen::Matrix4d T_a = DallE::FK::FKinBody(M, Blist, theta_a);
-  Eigen::Matrix4d T_b = DallE::FK::FKinBody(M, Blist, theta_b);
-  Eigen::Matrix4d T_c = DallE::FK::FKinBody(M, Blist, theta_c);
-  Eigen::Matrix4d T_c_space = DallE::FK::FKinSpace(M, Slist, theta_c);
+  Eigen::Matrix4d T_a = WallE::FK::FKinBody(M, Blist, theta_a);
+  Eigen::Matrix4d T_b = WallE::FK::FKinBody(M, Blist, theta_b);
+  Eigen::Matrix4d T_c = WallE::FK::FKinBody(M, Blist, theta_c);
+  Eigen::Matrix4d T_c_space = WallE::FK::FKinSpace(M, Slist, theta_c);
   EXPECT_NEAR(T_c_space(0, 3), T_c(0, 3), 1e-9);
   EXPECT_NEAR(T_c_space(1, 3), T_c(1, 3), 1e-9);
 
   std::vector<Eigen::Matrix4d> trajectory = {T_a, T_b, T_c};
 
-  DallE::MPCIKConfig config;
+  WallE::MPCIKConfig config;
   config.horizon = 5;
   config.dt = 0.05;
   config.max_iterations = 200;
 
   Eigen::VectorXd thetalist(2);
   thetalist << 0.1, -0.1;
-  DallE::MPCIKResult result =
-      DallE::IK::MPCIKinBody(Blist, M, trajectory, thetalist, config);
+  WallE::MPCIKResult result =
+      WallE::IK::MPCIKinBody(Blist, M, trajectory, thetalist, config);
 
   EXPECT_TRUE(result.converged);
-  Eigen::MatrixXd T_final = DallE::FK::FKinBody(M, Blist, result.thetalist);
+  Eigen::MatrixXd T_final = WallE::FK::FKinBody(M, Blist, result.thetalist);
   EXPECT_NEAR(T_final(0, 3), trajectory.back()(0, 3), 1e-2);
   EXPECT_NEAR(T_final(1, 3), trajectory.back()(1, 3), 1e-2);
   EXPECT_NEAR(T_final(2, 3), trajectory.back()(2, 3), 1e-2);
@@ -197,13 +197,13 @@ TEST(MPCIKTest, MPCThreeDOFJointLimits) {
 
   Eigen::VectorXd theta_target(3);
   theta_target << 0.5, 0.5, 0.5;
-  Eigen::Matrix4d T_target = DallE::FK::FKinBody(M, Blist, theta_target);
-  Eigen::Matrix4d T_target_space = DallE::FK::FKinSpace(M, Slist, theta_target);
+  Eigen::Matrix4d T_target = WallE::FK::FKinBody(M, Blist, theta_target);
+  Eigen::Matrix4d T_target_space = WallE::FK::FKinSpace(M, Slist, theta_target);
   EXPECT_NEAR(T_target_space(0, 3), T_target(0, 3), 1e-9);
   EXPECT_NEAR(T_target_space(1, 3), T_target(1, 3), 1e-9);
   EXPECT_NEAR(T_target_space(2, 3), T_target(2, 3), 1e-9);
 
-  DallE::MPCIKConfig config;
+  WallE::MPCIKConfig config;
   config.horizon = 5;
   config.dt = 0.05;
   config.max_iterations = 300;
@@ -217,8 +217,8 @@ TEST(MPCIKTest, MPCThreeDOFJointLimits) {
   Eigen::VectorXd thetalist(3);
   thetalist << 0.0, 0.0, 0.0;
   std::vector<Eigen::Matrix4d> trajectory = {T_target};
-  DallE::MPCIKResult result =
-      DallE::IK::MPCIKinBody(Blist, M, trajectory, thetalist, config);
+  WallE::MPCIKResult result =
+      WallE::IK::MPCIKinBody(Blist, M, trajectory, thetalist, config);
 
   EXPECT_EQ(result.thetalist.size(), 3);
   for (int i = 0; i < result.thetalist.size(); ++i) {
@@ -244,9 +244,9 @@ TEST(MPCIKTest, MPCSingularityAvoidance) {
 
   Eigen::VectorXd theta_target(3);
   theta_target << 0.3, 0.5, -0.3;
-  Eigen::Matrix4d T_target = DallE::FK::FKinBody(M, Blist, theta_target);
+  Eigen::Matrix4d T_target = WallE::FK::FKinBody(M, Blist, theta_target);
 
-  DallE::MPCIKConfig config;
+  WallE::MPCIKConfig config;
   config.horizon = 5;
   config.dt = 0.05;
   config.max_iterations = 300;
@@ -257,8 +257,8 @@ TEST(MPCIKTest, MPCSingularityAvoidance) {
   Eigen::VectorXd thetalist(3);
   thetalist << 0.0, 0.0, 0.0;
   std::vector<Eigen::Matrix4d> trajectory = {T_target};
-  DallE::MPCIKResult result =
-      DallE::IK::MPCIKinBody(Blist, M, trajectory, thetalist, config);
+  WallE::MPCIKResult result =
+      WallE::IK::MPCIKinBody(Blist, M, trajectory, thetalist, config);
 
   EXPECT_GT(result.iterations, 0);
   EXPECT_EQ(result.thetalist.size(), 3);
@@ -287,9 +287,9 @@ TEST(MPCIKTest, MPCWorkspaceBounds) {
 
   Eigen::VectorXd theta_target(2);
   theta_target << pi / 4.0, -pi / 4.0;
-  Eigen::Matrix4d T_target = DallE::FK::FKinBody(M, Blist, theta_target);
+  Eigen::Matrix4d T_target = WallE::FK::FKinBody(M, Blist, theta_target);
 
-  DallE::MPCIKConfig config;
+  WallE::MPCIKConfig config;
   config.horizon = 5;
   config.dt = 0.05;
   config.max_iterations = 200;
@@ -301,10 +301,10 @@ TEST(MPCIKTest, MPCWorkspaceBounds) {
   Eigen::VectorXd thetalist(2);
   thetalist << 0.1, -0.1;
   std::vector<Eigen::Matrix4d> trajectory = {T_target};
-  DallE::MPCIKResult result =
-      DallE::IK::MPCIKinBody(Blist, M, trajectory, thetalist, config);
+  WallE::MPCIKResult result =
+      WallE::IK::MPCIKinBody(Blist, M, trajectory, thetalist, config);
 
-  Eigen::MatrixXd T_final = DallE::FK::FKinBody(M, Blist, result.thetalist);
+  Eigen::MatrixXd T_final = WallE::FK::FKinBody(M, Blist, result.thetalist);
   Eigen::Vector3d p_final = T_final.block<3, 1>(0, 3);
   bool within_workspace =
       (p_final.array() >= config.workspace_min.array() - 1e-6).all() &&
@@ -337,7 +337,7 @@ TEST(MPCIKTest, MPCSinglePoseConvergence) {
        0, 0, -1, 1.68584073,
        0, 0, 0, 1;
 
-  DallE::MPCIKConfig config;
+  WallE::MPCIKConfig config;
   config.horizon = 5;
   config.dt = 0.05;
   config.max_iterations = 300;
@@ -345,11 +345,11 @@ TEST(MPCIKTest, MPCSinglePoseConvergence) {
   Eigen::VectorXd thetalist(3);
   thetalist << 1.5, 2.5, 3.0;
   std::vector<Eigen::Matrix4d> trajectory = {T};
-  DallE::MPCIKResult result =
-      DallE::IK::MPCIKinBody(Blist, M, trajectory, thetalist, config);
+  WallE::MPCIKResult result =
+      WallE::IK::MPCIKinBody(Blist, M, trajectory, thetalist, config);
 
   EXPECT_TRUE(result.converged);
-  Eigen::MatrixXd T_final = DallE::FK::FKinBody(M, Blist, result.thetalist);
+  Eigen::MatrixXd T_final = WallE::FK::FKinBody(M, Blist, result.thetalist);
   for (int r = 0; r < 3; ++r) {
     for (int c = 0; c < 3; ++c) {
       EXPECT_NEAR(T_final(r, c), T(r, c), 1e-2);
@@ -389,7 +389,7 @@ TEST(MPCIKTest, MPCBodySpaceConsistency) {
        0, 0, -1, 1.68584073,
        0, 0, 0, 1;
 
-  DallE::MPCIKConfig config;
+  WallE::MPCIKConfig config;
   config.horizon = 5;
   config.dt = 0.05;
   config.max_iterations = 300;
@@ -399,15 +399,15 @@ TEST(MPCIKTest, MPCBodySpaceConsistency) {
   Eigen::VectorXd theta_space = theta_body;
   std::vector<Eigen::Matrix4d> trajectory = {T};
 
-  DallE::MPCIKResult result_body =
-      DallE::IK::MPCIKinBody(Blist, M, trajectory, theta_body, config);
-  DallE::MPCIKResult result_space =
-      DallE::IK::MPCIKinSpace(Slist, M, trajectory, theta_space, config);
+  WallE::MPCIKResult result_body =
+      WallE::IK::MPCIKinBody(Blist, M, trajectory, theta_body, config);
+  WallE::MPCIKResult result_space =
+      WallE::IK::MPCIKinSpace(Slist, M, trajectory, theta_space, config);
 
   EXPECT_TRUE(result_body.converged);
   EXPECT_TRUE(result_space.converged);
-  Eigen::MatrixXd T_body = DallE::FK::FKinBody(M, Blist, result_body.thetalist);
-  Eigen::MatrixXd T_space = DallE::FK::FKinSpace(M, Slist, result_space.thetalist);
+  Eigen::MatrixXd T_body = WallE::FK::FKinBody(M, Blist, result_body.thetalist);
+  Eigen::MatrixXd T_space = WallE::FK::FKinSpace(M, Slist, result_space.thetalist);
 
   for (int r = 0; r < 4; ++r) {
     for (int c = 0; c < 4; ++c) {
@@ -437,7 +437,7 @@ TEST(MPCIKTest, MPCNonConvergence) {
            0, 0, 1, 0,
            0, 0, 0, 1;
 
-  DallE::MPCIKConfig config;
+  WallE::MPCIKConfig config;
   config.horizon = 5;
   config.dt = 0.05;
   config.max_iterations = 50;
@@ -445,8 +445,8 @@ TEST(MPCIKTest, MPCNonConvergence) {
   Eigen::VectorXd thetalist(2);
   thetalist << 0.0, 0.0;
   std::vector<Eigen::Matrix4d> trajectory = {T_far};
-  DallE::MPCIKResult result =
-      DallE::IK::MPCIKinBody(Blist, M, trajectory, thetalist, config);
+  WallE::MPCIKResult result =
+      WallE::IK::MPCIKinBody(Blist, M, trajectory, thetalist, config);
 
   EXPECT_FALSE(result.converged);
   EXPECT_GT(result.final_position_error, 1.0);
@@ -470,9 +470,9 @@ TEST(MPCIKTest, MPCSevenDOFArm) {
 
   Eigen::VectorXd theta_target(7);
   theta_target << 0.1, -0.2, 0.15, -0.3, 0.1, 0.2, -0.1;
-  Eigen::Matrix4d T_target = DallE::FK::FKinSpace(M, Slist, theta_target);
+  Eigen::Matrix4d T_target = WallE::FK::FKinSpace(M, Slist, theta_target);
 
-  DallE::MPCIKConfig config;
+  WallE::MPCIKConfig config;
   config.horizon = 3;
   config.dt = 0.05;
   config.max_iterations = 300;
@@ -485,8 +485,8 @@ TEST(MPCIKTest, MPCSevenDOFArm) {
 
   Eigen::VectorXd thetalist = Eigen::VectorXd::Zero(7);
   std::vector<Eigen::Matrix4d> trajectory = {T_target};
-  DallE::MPCIKResult result =
-      DallE::IK::MPCIKinSpace(Slist, M, trajectory, thetalist, config);
+  WallE::MPCIKResult result =
+      WallE::IK::MPCIKinSpace(Slist, M, trajectory, thetalist, config);
 
   EXPECT_GT(result.iterations, 0);
   EXPECT_EQ(result.thetalist.size(), 7);
@@ -523,11 +523,11 @@ TEST(MPCIKTest, MPCQuadrupedLeg) {
   theta_b << 0.0, 0.5, -1.0;
   Eigen::VectorXd theta_c(3);
   theta_c << 0.0, 0.2, -0.4;
-  Eigen::Matrix4d T_a = DallE::FK::FKinSpace(M, Slist, theta_a);
-  Eigen::Matrix4d T_b = DallE::FK::FKinSpace(M, Slist, theta_b);
-  Eigen::Matrix4d T_c = DallE::FK::FKinSpace(M, Slist, theta_c);
+  Eigen::Matrix4d T_a = WallE::FK::FKinSpace(M, Slist, theta_a);
+  Eigen::Matrix4d T_b = WallE::FK::FKinSpace(M, Slist, theta_b);
+  Eigen::Matrix4d T_c = WallE::FK::FKinSpace(M, Slist, theta_c);
 
-  DallE::MPCIKConfig config;
+  WallE::MPCIKConfig config;
   config.horizon = 3;
   config.dt = 0.02;
   config.max_iterations = 300;
@@ -541,8 +541,8 @@ TEST(MPCIKTest, MPCQuadrupedLeg) {
   Eigen::VectorXd thetalist(3);
   thetalist << 0.0, 0.0, 0.0;
   std::vector<Eigen::Matrix4d> trajectory = {T_a, T_b, T_c};
-  DallE::MPCIKResult result =
-      DallE::IK::MPCIKinSpace(Slist, M, trajectory, thetalist, config);
+  WallE::MPCIKResult result =
+      WallE::IK::MPCIKinSpace(Slist, M, trajectory, thetalist, config);
 
   EXPECT_GT(result.iterations, 0);
   EXPECT_EQ(result.thetalist.size(), 3);

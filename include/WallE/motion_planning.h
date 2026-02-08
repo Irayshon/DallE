@@ -1,10 +1,10 @@
 #pragma once
 
-namespace DallE {
+namespace WallE {
 /**
  * @brief Placeholder for future motion planning utilities.
  */
 class MotionPlanning {
  public:
 };
-}  // namespace DallE
+}  // namespace WallE

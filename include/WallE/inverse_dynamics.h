@@ -3,7 +3,7 @@
 #include <Eigen/Dense>
 #include <vector>
 
-namespace DallE {
+namespace WallE {
 /**
  * @brief Inverse dynamics solver.
  */
@@ -31,4 +31,4 @@ class InverseDynamics {
       const std::vector<Eigen::MatrixXd>& Glist,
       const Eigen::MatrixXd& Slist);
 };
-}  // namespace DallE
+}  // namespace WallE

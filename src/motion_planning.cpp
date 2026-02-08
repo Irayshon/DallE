@@ -1,4 +1,4 @@
-#include "DallE/motion_planning.h"
+#include "WallE/motion_planning.h"
 
-namespace DallE {
-}  // namespace DallE
+namespace WallE {
+}  // namespace WallE

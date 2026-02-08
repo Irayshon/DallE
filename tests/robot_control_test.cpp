@@ -1,4 +1,4 @@
-#include "DallE/robot_control.h"
+#include "WallE/robot_control.h"
 
 #include <Eigen/Dense>
 #include <gtest/gtest.h>
@@ -6,7 +6,7 @@
 #include <cmath>
 #include <vector>
 
-#include "DallE/trajectory.h"
+#include "WallE/trajectory.h"
 
 namespace {
 
@@ -97,7 +97,7 @@ TEST(RobotControlTest, ComputedTorqueThreeLinkExample) {
   double Ki = 1.2;
   double Kd = 1.1;
 
-  Eigen::VectorXd tau = DallE::RobotControl::ComputedTorque(
+  Eigen::VectorXd tau = WallE::RobotControl::ComputedTorque(
       data.thetalist, data.dthetalist, eint, thetalistd, dthetalistd,
       ddthetalistd, data.g, data.Mlist, data.Glist, data.Slist, Kp, Ki, Kd);
 
@@ -123,7 +123,7 @@ TEST(RobotControlTest, ComputedTorqueAlternateGainsFinite) {
   double Ki = 0.05;
   double Kd = 0.45;
 
-  Eigen::VectorXd tau = DallE::RobotControl::ComputedTorque(
+  Eigen::VectorXd tau = WallE::RobotControl::ComputedTorque(
       data.thetalist, data.dthetalist, eint, thetalistd, dthetalistd,
       ddthetalistd, data.g, data.Mlist, data.Glist, data.Slist, Kp, Ki, Kd);
 
@@ -144,7 +144,7 @@ TEST(RobotControlTest, SimulateControlReferenceTrajectory) {
   int method = 5;
 
   Eigen::MatrixXd traj =
-      DallE::Trajectory::JointTrajectory(data.thetalist, thetaend, Tf, N, method);
+      WallE::Trajectory::JointTrajectory(data.thetalist, thetaend, Tf, N, method);
   Eigen::MatrixXd thetamatd = traj;
   Eigen::MatrixXd dthetamatd = Eigen::MatrixXd::Zero(N, 3);
   Eigen::MatrixXd ddthetamatd = Eigen::MatrixXd::Zero(N, 3);
@@ -194,7 +194,7 @@ TEST(RobotControlTest, SimulateControlReferenceTrajectory) {
   double Kd = 18.0;
   int intRes = 8;
 
-  auto control_traj = DallE::RobotControl::SimulateControl(
+  auto control_traj = WallE::RobotControl::SimulateControl(
       data.thetalist, data.dthetalist, data.g, Ftipmat, data.Mlist, data.Glist,
       data.Slist, thetamatd, dthetamatd, ddthetamatd, gtilde, Mtildelist,
       Gtildelist, Kp, Ki, Kd, dt, intRes);

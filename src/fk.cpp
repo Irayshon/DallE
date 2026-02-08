@@ -1,8 +1,8 @@
-#include "DallE/fk.h"
+#include "WallE/fk.h"
 
-#include "DallE/tools.h"
+#include "WallE/tools.h"
 
-namespace DallE {
+namespace WallE {
 Eigen::MatrixXd FK::FKinBody(const Eigen::MatrixXd& M,
                              const Eigen::MatrixXd& Blist,
                              const Eigen::VectorXd& thetalist) {
@@ -25,4 +25,4 @@ Eigen::MatrixXd FK::FKinSpace(const Eigen::MatrixXd& M,
   }
   return T;
 }
-}  // namespace DallE
+}  // namespace WallE

@@ -1,10 +1,10 @@
-#include "DallE/dynamics.h"
+#include "WallE/dynamics.h"
 
-#include "DallE/inverse_dynamics.h"
+#include "WallE/inverse_dynamics.h"
 
 #include <vector>
 
-namespace DallE {
+namespace WallE {
 Eigen::MatrixXd Dynamics::MassMatrix(
     const Eigen::VectorXd& thetalist,
     const std::vector<Eigen::MatrixXd>& Mlist,
@@ -157,4 +157,4 @@ std::vector<Eigen::MatrixXd> Dynamics::ForwardDynamicsTrajectory(
   }
   return {thetamat, dthetamat};
 }
-}  // namespace DallE
+}  // namespace WallE

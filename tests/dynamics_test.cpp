@@ -1,4 +1,4 @@
-#include "DallE/dynamics.h"
+#include "WallE/dynamics.h"
 
 #include <Eigen/Dense>
 #include <gtest/gtest.h>
@@ -85,7 +85,7 @@ ThreeLinkExampleData MakeThreeLinkExample() {
 TEST(DynamicsTest, MassMatrixExample) {
   const auto data = MakeThreeLinkExample();
 
-  Eigen::MatrixXd mass = DallE::Dynamics::MassMatrix(
+  Eigen::MatrixXd mass = WallE::Dynamics::MassMatrix(
       data.thetalist, data.Mlist, data.Glist, data.Slist);
 
   Eigen::MatrixXd expected(3, 3);
@@ -103,7 +103,7 @@ TEST(DynamicsTest, MassMatrixExample) {
 TEST(DynamicsTest, GravityForcesExample) {
   const auto data = MakeThreeLinkExample();
 
-  Eigen::VectorXd tau = DallE::Dynamics::GravityForces(
+  Eigen::VectorXd tau = WallE::Dynamics::GravityForces(
       data.thetalist, data.g, data.Mlist, data.Glist, data.Slist);
 
   Eigen::VectorXd expected(3);
@@ -117,7 +117,7 @@ TEST(DynamicsTest, GravityForcesExample) {
 TEST(DynamicsTest, VelQuadraticForcesExample) {
   const auto data = MakeThreeLinkExample();
 
-  Eigen::VectorXd tau = DallE::Dynamics::VelQuadraticForces(
+  Eigen::VectorXd tau = WallE::Dynamics::VelQuadraticForces(
       data.thetalist, data.dthetalist, data.Mlist, data.Glist, data.Slist);
 
   Eigen::VectorXd expected(3);
@@ -131,7 +131,7 @@ TEST(DynamicsTest, VelQuadraticForcesExample) {
 TEST(DynamicsTest, ForwardDynamicsExample) {
   const auto data = MakeThreeLinkExample();
 
-  Eigen::VectorXd ddthetalist = DallE::Dynamics::ForwardDynamics(
+  Eigen::VectorXd ddthetalist = WallE::Dynamics::ForwardDynamics(
       data.thetalist, data.dthetalist, data.taulist, data.g, data.Ftip,
       data.Mlist, data.Glist, data.Slist);
 

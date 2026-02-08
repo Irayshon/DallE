@@ -1,4 +1,4 @@
-#include "DallE/inverse_dynamics.h"
+#include "WallE/inverse_dynamics.h"
 
 #include <Eigen/Dense>
 #include <gtest/gtest.h>
@@ -86,7 +86,7 @@ TEST(InverseDynamicsTest, ThreeLinkExample) {
   const auto data = MakeThreeLinkExample();
 
   Eigen::VectorXd tau =
-      DallE::InverseDynamics::Compute(data.thetalist, data.dthetalist,
+      WallE::InverseDynamics::Compute(data.thetalist, data.dthetalist,
                                       data.ddthetalist, data.g, data.Ftip,
                                       data.Mlist, data.Glist, data.Slist);
 
@@ -103,7 +103,7 @@ TEST(InverseDynamicsTest, GravityOnlyExample) {
   Eigen::VectorXd zeros = Eigen::VectorXd::Zero(data.thetalist.size());
   Eigen::VectorXd Ftip = Eigen::VectorXd::Zero(6);
 
-  Eigen::VectorXd tau = DallE::InverseDynamics::Compute(
+  Eigen::VectorXd tau = WallE::InverseDynamics::Compute(
       data.thetalist, zeros, zeros, data.g, Ftip, data.Mlist, data.Glist,
       data.Slist);
 

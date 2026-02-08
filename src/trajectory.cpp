@@ -1,8 +1,8 @@
-#include "DallE/trajectory.h"
+#include "WallE/trajectory.h"
 
-#include "DallE/tools.h"
+#include "WallE/tools.h"
 
-namespace DallE {
+namespace WallE {
 double Trajectory::CubicTimeScaling(double Tf, double t) {
   double ratio = t / Tf;
   return 3.0 * ratio * ratio - 2.0 * ratio * ratio * ratio;
@@ -77,4 +77,4 @@ std::vector<Eigen::MatrixXd> Trajectory::CartesianTrajectory(
   }
   return traj;
 }
-}  // namespace DallE
+}  // namespace WallE

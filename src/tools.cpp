@@ -1,4 +1,4 @@
-#include "DallE/tools.h"
+#include "WallE/tools.h"
 
 #include <cmath>
 #include <limits>
@@ -8,7 +8,7 @@ namespace {
 constexpr double kPi = 3.14159265358979323846;
 }
 
-namespace DallE {
+namespace WallE {
 bool Tools::NearZero(double value) {
   return std::abs(value) < 1e-6;
 }
@@ -291,4 +291,4 @@ double Tools::ConditionNumber(const Eigen::MatrixXd& J) {
   }
   return s(0) / min_sigma;
 }
-}  // namespace DallE
+}  // namespace WallE

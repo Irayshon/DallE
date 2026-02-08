@@ -5,7 +5,7 @@
 #include <tuple>
 #include <vector>
 
-namespace DallE {
+namespace WallE {
 
 /// Configuration for MPC-based IK solver.
 struct MPCIKConfig {
@@ -140,4 +140,4 @@ class IK {
       Eigen::VectorXd& thetalist,
       const MPCIKConfig& config);
 };
-}  // namespace DallE
+}  // namespace WallE

@@ -2,7 +2,7 @@
 
 #include <Eigen/Dense>
 
-namespace DallE {
+namespace WallE {
 /**
  * @brief Forward kinematics functions.
  */
@@ -30,4 +30,4 @@ class FK {
                                    const Eigen::MatrixXd& Slist,
                                    const Eigen::VectorXd& thetalist);
 };
-}  // namespace DallE
+}  // namespace WallE

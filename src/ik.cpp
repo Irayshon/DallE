@@ -1,4 +1,4 @@
-#include "DallE/ik.h"
+#include "WallE/ik.h"
 
 #include <algorithm>
 
@@ -8,8 +8,8 @@
 #include <tuple>
 #include <vector>
 
-#include "DallE/fk.h"
-#include "DallE/tools.h"
+#include "WallE/fk.h"
+#include "WallE/tools.h"
 
 namespace {
 constexpr double kLargeBound = 1e10;
@@ -33,8 +33,8 @@ Eigen::MatrixXd PseudoInverse(const Eigen::MatrixXd& J) {
 
 Eigen::VectorXd ComputeTaskError(const Eigen::MatrixXd& T_current,
                                  const Eigen::Matrix4d& T_target) {
-  return DallE::Tools::se3ToVec(
-      DallE::Tools::MatrixLog6(DallE::Tools::TransInv(T_current) * T_target));
+  return WallE::Tools::se3ToVec(
+      WallE::Tools::MatrixLog6(WallE::Tools::TransInv(T_current) * T_target));
 }
 
 double ComputeManipulability(const Eigen::MatrixXd& J) {
@@ -112,7 +112,7 @@ bool HasJointBounds(const Eigen::VectorXd& lower,
   return lower.size() == n && upper.size() == n;
 }
 
-bool HasWorkspaceBounds(const DallE::MPCIKConfig& config) {
+bool HasWorkspaceBounds(const WallE::MPCIKConfig& config) {
   return (config.workspace_min.array() > -1e9).any() ||
          (config.workspace_max.array() < 1e9).any();
 }
@@ -124,7 +124,7 @@ QPData BuildMPCQP(
     const Eigen::VectorXd& theta_current,
     const Eigen::VectorXd& dtheta_current,
     double h,
-    const DallE::MPCIKConfig& config,
+    const WallE::MPCIKConfig& config,
     const FKFunc& fk_func,
     const JacFunc& jac_func) {
   QPData qp;
@@ -339,15 +339,15 @@ QPData BuildMPCQP(
   return qp;
 }
 
-DallE::MPCIKResult MPCIKSolve(const Eigen::MatrixXd& screw_axes,
+WallE::MPCIKResult MPCIKSolve(const Eigen::MatrixXd& screw_axes,
                               const Eigen::MatrixXd& M,
                               const std::vector<Eigen::Matrix4d>& T_trajectory,
                               Eigen::VectorXd& thetalist,
-                              const DallE::MPCIKConfig& config,
+                              const WallE::MPCIKConfig& config,
                               const FKFunc& fk_func,
                               const JacFunc& jac_func,
                               const ErrorTransformFunc& error_transform) {
-  DallE::MPCIKResult result;
+  WallE::MPCIKResult result;
   int n = static_cast<int>(thetalist.size());
 
   result.thetalist = thetalist;
@@ -483,7 +483,7 @@ DallE::MPCIKResult MPCIKSolve(const Eigen::MatrixXd& screw_axes,
 }
 }  // namespace
 
-namespace DallE {
+namespace WallE {
 bool IK::IKinBody(const Eigen::MatrixXd& Blist,
                   const Eigen::MatrixXd& M,
                   const Eigen::MatrixXd& T,
@@ -579,4 +579,4 @@ MPCIKResult IK::MPCIKinSpace(const Eigen::MatrixXd& Slist,
   return MPCIKSolve(Slist, M, T_trajectory, thetalist, config, fk, jac,
                     error_tf);
 }
-}  // namespace DallE
+}  // namespace WallE

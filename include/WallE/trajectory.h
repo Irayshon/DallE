@@ -3,7 +3,7 @@
 #include <Eigen/Dense>
 #include <vector>
 
-namespace DallE {
+namespace WallE {
 /**
  * @brief Time scaling and trajectory generation utilities.
  */
@@ -72,4 +72,4 @@ class Trajectory {
       int N,
       int method);
 };
-}  // namespace DallE
+}  // namespace WallE

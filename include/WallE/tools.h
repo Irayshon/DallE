@@ -3,7 +3,7 @@
 #include <Eigen/Dense>
 #include <vector>
 
-namespace DallE {
+namespace WallE {
 /**
  * @brief Mathematical helpers for rigid-body kinematics and dynamics.
  *
@@ -224,4 +224,4 @@ class Tools {
    */
   static double ConditionNumber(const Eigen::MatrixXd& J);
 };
-}  // namespace DallE
+}  // namespace WallE

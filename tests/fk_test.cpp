@@ -1,4 +1,4 @@
-#include "DallE/fk.h"
+#include "WallE/fk.h"
 
 #include <Eigen/Dense>
 #include <cmath>
@@ -37,8 +37,8 @@ TEST(FKTest, BodyAndSpaceExample) {
               0, 0, -1, 1.68584073,
               0, 0, 0, 1;
 
-  auto T_body = DallE::FK::FKinBody(M, Blist, thetalist);
-  auto T_space = DallE::FK::FKinSpace(M, Slist, thetalist);
+  auto T_body = WallE::FK::FKinBody(M, Blist, thetalist);
+  auto T_space = WallE::FK::FKinSpace(M, Slist, thetalist);
 
   for (int r = 0; r < 4; ++r) {
     for (int c = 0; c < 4; ++c) {
@@ -87,8 +87,8 @@ TEST(FKTest, PlanarTwoLinkExample) {
               0, 0, 1, 0,
               0, 0, 0, 1;
 
-  auto T_body = DallE::FK::FKinBody(M, Blist, thetalist);
-  auto T_space = DallE::FK::FKinSpace(M, Slist, thetalist);
+  auto T_body = WallE::FK::FKinBody(M, Blist, thetalist);
+  auto T_space = WallE::FK::FKinSpace(M, Slist, thetalist);
 
   for (int r = 0; r < 4; ++r) {
     for (int c = 0; c < 4; ++c) {

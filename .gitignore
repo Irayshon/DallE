@@ -6,6 +6,8 @@ dist/
 wheels/
 *.egg-info
 .DS_Store
+modern_robotics.egg-info/
+Tests/
 
 
 # Virtual environments

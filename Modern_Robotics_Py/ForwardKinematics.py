@@ -1,8 +1,9 @@
-from Tools import *
+from Modern_Robotics_Py import Tools
+import numpy as np
 
 '''________________________________________________________________________________'''
 
-def FKin(M, list, thetalist, frame = 'fixed'):
+def FKin(M, list, thetalist, frame = 'space'):
     """Computes forward kinematics in the body frame for an open chain robot
 
     :param M: The home configuration (position and orientation) of the end-
@@ -40,12 +41,12 @@ def FKin(M, list, thetalist, frame = 'fixed'):
         """ Body Frame: T = M * Exp(B1) * Exp(B2) ...
             Loop 0 to n-1, multiply on the RIGHT """
         for i in range(n):
-            T = np.dot(T, MatrixExp6(VecTose3(np.array(list)[:, i] * thetalist[i])))
-    elif frame.lower() == 'fixed':
+            T = np.dot(T, Tools.MatrixExp6(Tools.VecTose3(np.array(list)[:, i] * thetalist[i])))
+    elif frame.lower() == 'space':
         """Space Frame: T = Exp(S1) * ... * Exp(Sn) * M
            Loop n-1 down to 0, multiply on the LEFT """
         for i in range(n - 1, -1, -1):
-            T = np.dot(MatrixExp6(VecTose3(np.array(list)[:, i] * thetalist[i])), T)
+            T = np.dot(Tools.MatrixExp6(Tools.VecTose3(np.array(list)[:, i] * thetalist[i])), T)
             
     return T
 

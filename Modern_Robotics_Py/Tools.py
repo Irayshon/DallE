@@ -284,100 +284,105 @@ def Adjoint(T):
 '''__________________________________________________________________________________'''
 
 
-# def TransInv(T):
-#     """Inverts a homogeneous transformation matrix
+def TransInv(T):
+    """Inverts a homogeneous transformation matrix
 
-#     :param T: A homogeneous transformation matrix
-#     :return: The inverse of T
-#     Uses the structure of transformation matrices to avoid taking a matrix
-#     inverse, for efficiency.
+    :param T: A homogeneous transformation matrix
+    :return: The inverse of T
+    Uses the structure of transformation matrices to avoid taking a matrix
+    inverse, for efficiency.
 
-#     Example input:
-#         T = np.array([[1, 0,  0, 0],
-#                       [0, 0, -1, 0],
-#                       [0, 1,  0, 3],
-#                       [0, 0,  0, 1]])
-#     Output:
-#         np.array([[1,  0, 0,  0],
-#                   [0,  0, 1, -3],
-#                   [0, -1, 0,  0],
-#                   [0,  0, 0,  1]])
-#     """
-#     R, p = TransToRp(T)
-#     Rt = np.array(R).T
-#     return np.r_[np.c_[Rt, -np.dot(Rt, p)], [[0, 0, 0, 1]]]
-
-
-# '''__________________________________________________________________________________'''
-
-# def MatrixLog3(R):
-#     """Computes the matrix logarithm of a rotation matrix
-
-#     :param R: A 3x3 rotation matrix
-#     :return: The matrix logarithm of R
-
-#     Example Input:
-#         R = np.array([[0, 0, 1],
-#                       [1, 0, 0],
-#                       [0, 1, 0]])
-#     Output:
-#         np.array([[          0, -1.20919958,  1.20919958],
-#                   [ 1.20919958,           0, -1.20919958],
-#                   [-1.20919958,  1.20919958,           0]])
-#     """
-#     acosinput = (np.trace(R) - 1) / 2.0
-#     if acosinput >= 1:
-#         return np.zeros((3, 3))
-#     elif acosinput <= -1:
-#         if not isZero(1 + R[2][2]):
-#             omg = (1.0 / np.sqrt(2 * (1 + R[2][2]))) \
-#                   * np.array([R[0][2], R[1][2], 1 + R[2][2]])
-#         elif not isZero(1 + R[1][1]):
-#             omg = (1.0 / np.sqrt(2 * (1 + R[1][1]))) \
-#                   * np.array([R[0][1], 1 + R[1][1], R[2][1]])
-#         else:
-#             omg = (1.0 / np.sqrt(2 * (1 + R[0][0]))) \
-#                   * np.array([1 + R[0][0], R[1][0], R[2][0]])
-#         return VecToso3(np.pi * omg)
-#     else:
-#         theta = np.arccos(acosinput)
-#         return theta / 2.0 / np.sin(theta) * (R - np.array(R).T)
+    Example input:
+        T = np.array([[1, 0,  0, 0],
+                      [0, 0, -1, 0],
+                      [0, 1,  0, 3],
+                      [0, 0,  0, 1]])
+    Output:
+        np.array([[1,  0, 0,  0],
+                  [0,  0, 1, -3],
+                  [0, -1, 0,  0],
+                  [0,  0, 0,  1]])
+    """
+    R, p = TransToRp(T)
+    Rt = np.array(R).T
+    return np.r_[np.c_[Rt, -np.dot(Rt, p)], [[0, 0, 0, 1]]]
 
 
-# '''__________________________________________________________________________________'''
+'''__________________________________________________________________________________'''
 
-# def MatrixLog6(T):
-#     """Computes the matrix logarithm of a homogeneous transformation matrix
+def MatrixLog3(R):
+    """Computes the matrix logarithm of a rotation matrix
 
-#     :param R: A matrix in SE3
-#     :return: The matrix logarithm of R
+    :param R: A 3x3 rotation matrix
+    :return: The matrix logarithm of R
 
-#     Example Input:
-#         T = np.array([[1, 0,  0, 0],
-#                       [0, 0, -1, 0],
-#                       [0, 1,  0, 3],
-#                       [0, 0,  0, 1]])
-#     Output:
-#         np.array([[0,          0,           0,           0]
-#                   [0,          0, -1.57079633,  2.35619449]
-#                   [0, 1.57079633,           0,  2.35619449]
-#                   [0,          0,           0,           0]])
-#     """
-#     R, p = TransToRp(T)
-#     omgmat = MatrixLog3(R)
-#     if np.array_equal(omgmat, np.zeros((3, 3))):
-#         return np.r_[np.c_[np.zeros((3, 3)),
-#                            [T[0][3], T[1][3], T[2][3]]],
-#                      [[0, 0, 0, 0]]]
-#     else:
-#         theta = np.arccos((np.trace(R) - 1) / 2.0)
-#         return np.r_[np.c_[omgmat,
-#                            np.dot(np.eye(3) - omgmat / 2.0 \
-#                            + (1.0 / theta - 1.0 / np.tan(theta / 2.0) / 2) \
-#                               * np.dot(omgmat,omgmat) / theta,[T[0][3],
-#                                                                T[1][3],
-#                                                                T[2][3]])],
-#                      [[0, 0, 0, 0]]]
+    Example Input:
+        R = np.array([[0, 0, 1],
+                      [1, 0, 0],
+                      [0, 1, 0]])
+    Output:
+        np.array([[          0, -1.20919958,  1.20919958],
+                  [ 1.20919958,           0, -1.20919958],
+                  [-1.20919958,  1.20919958,           0]])
+    """
+    acosinput = (np.trace(R) - 1) / 2.0
+    if acosinput >= 1:
+        return np.zeros((3, 3))
+    elif acosinput <= -1:
+        if not isZero(1 + R[2][2]):
+            omg = (1.0 / np.sqrt(2 * (1 + R[2][2]))) \
+                  * np.array([R[0][2], R[1][2], 1 + R[2][2]])
+        elif not isZero(1 + R[1][1]):
+            omg = (1.0 / np.sqrt(2 * (1 + R[1][1]))) \
+                  * np.array([R[0][1], 1 + R[1][1], R[2][1]])
+        else:
+            omg = (1.0 / np.sqrt(2 * (1 + R[0][0]))) \
+                  * np.array([1 + R[0][0], R[1][0], R[2][0]])
+        return VecToso3(np.pi * omg)
+    else:
+        theta = np.arccos(acosinput)
+        return theta / 2.0 / np.sin(theta) * (R - np.array(R).T)
+
+
+'''__________________________________________________________________________________'''
+
+def MatrixLog6(T):
+    """Computes the matrix logarithm of a homogeneous transformation matrix
+
+    :param R: A matrix in SE3
+    :return: The matrix logarithm of R
+
+    Example Input:
+        T = np.array([[1, 0,  0, 0],
+                      [0, 0, -1, 0],
+                      [0, 1,  0, 3],
+                      [0, 0,  0, 1]])
+    Output:
+        np.array([[0,          0,           0,           0]
+                  [0,          0, -1.57079633,  2.35619449]
+                  [0, 1.57079633,           0,  2.35619449]
+                  [0,          0,           0,           0]])
+    """
+    R, p = TransToRp(T)
+    omgmat = MatrixLog3(R)
+    if np.array_equal(omgmat, np.zeros((3, 3))):
+        return np.r_[
+            np.c_[np.zeros((3, 3)), [T[0][3], T[1][3], T[2][3]]],
+            [[0, 0, 0, 0]],
+        ]
+    else:
+        theta = np.arccos((np.trace(R) - 1) / 2.0)
+        V = (
+            np.eye(3)
+            - omgmat / 2.0
+            + (1.0 / theta - 1.0 / np.tan(theta / 2.0) / 2)
+            * np.dot(omgmat, omgmat)
+            / theta
+        )
+        return np.r_[
+            np.c_[omgmat, np.dot(V, [T[0][3], T[1][3], T[2][3]])],
+            [[0, 0, 0, 0]],
+        ]
     
 
-# '''__________________________________________________________________________________'''
+'''__________________________________________________________________________________'''

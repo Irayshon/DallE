@@ -519,3 +519,72 @@ def SpatialInertia(m, com, diag_I):
     G[3:6, 3:6] = m * np.eye(3, dtype=np.float64)
     
     return G
+
+'''__________________________________________________________________________________'''
+
+def quaternion_to_rotation_matrix(q):
+    """
+    Converts a quaternion [w, x, y, z] into a 3x3 rotation matrix.
+    """
+    w, x, y, z = q
+    
+    # Compute scaling factor (for unit quaternions, this is 1)
+    # Using 2 / (q . q) ensures it works even for non-unit quaternions
+    s = 2.0 / np.dot(q, q)
+    
+    # Pre-calculate products for efficiency
+    wx, wy, wz = s*w*x, s*w*y, s*w*z
+    xx, xy, xz = s*x*x, s*x*y, s*x*z
+    yy, yz, zz = s*y*y, s*y*z, s*z*z
+
+    return np.array([
+        [1.0 - (yy + zz), xy - wz,         xz + wy],
+        [xy + wz,         1.0 - (xx + zz), yz - wx],
+        [xz - wy,         yz + wx,         1.0 - (xx + yy)]
+    ])
+
+
+
+def parse_Mlist_from_mujoco_xml(xml_path, body_order):
+    """
+    Builds Modern Robotics Mlist from MuJoCo XML.
+
+    Parameters
+    ----------
+    xml_path : str
+        Path to MuJoCo XML
+    body_order : list[str]
+        Ordered list of body names from base → EE
+
+    Returns
+    -------
+    Mlist : list[np.ndarray]
+        List of 4x4 SE(3) matrices [M01, M12, ..., M(n,n+1)]
+    """
+    tree = ET.parse(xml_path)
+    root = tree.getroot()
+
+    # Map body name → XML element
+    bodies = {b.get('name'): b for b in root.iter('body')}
+
+    Mlist = []
+
+    for parent, child in zip(body_order[:-1], body_order[1:]):
+        T_child = body_transform(bodies[child])
+        Mlist.append(T_child)
+
+    return Mlist
+
+def body_transform(body):
+    """
+    Returns SE(3) transform from parent body frame to this body frame
+    """
+    pos = np.fromstring(body.get('pos', '0 0 0'), sep=' ', dtype=np.float64)
+    quat = np.fromstring(body.get('quat', '1 0 0 0'), sep=' ', dtype=np.float64)
+
+    R = quaternion_to_rotation_matrix(quat)
+
+    T = np.eye(4)
+    T[:3, :3] = R
+    T[:3, 3] = pos
+    return T

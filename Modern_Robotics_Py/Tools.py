@@ -1,5 +1,9 @@
 import numpy as np
 
+import numpy as np
+import trimesh
+import xml.etree.ElementTree as ET
+
 
 '''__________________________________________________________________________________'''
 
@@ -386,3 +390,59 @@ def MatrixLog6(T):
     
 
 '''__________________________________________________________________________________'''
+
+def ad(V):
+    """Calculate the 6x6 matrix [adV] of the given 6-vector
+
+    :param V: A 6-vector spatial velocity
+    :return: The corresponding 6x6 matrix [adV]
+
+    Used to calculate the Lie bracket [V1, V2] = [adV1]V2
+
+    Example Input:
+        V = np.array([1, 2, 3, 4, 5, 6])
+    Output:
+        np.array([[ 0, -3,  2,  0,  0,  0],
+                  [ 3,  0, -1,  0,  0,  0],
+                  [-2,  1,  0,  0,  0,  0],
+                  [ 0, -6,  5,  0, -3,  2],
+                  [ 6,  0, -4,  3,  0, -1],
+                  [-5,  4,  0, -2,  1,  0]])
+    """
+    omgmat = VecToso3([V[0], V[1], V[2]])
+    return np.r_[np.c_[omgmat, np.zeros((3, 3))],
+                 np.c_[VecToso3([V[3], V[4], V[5]]), omgmat]]
+
+
+
+'''__________________________________________________________________________________'''
+
+def EulerStep(thetalist, dthetalist, ddthetalist, dt):
+    """
+    Computes the joint angles and velocities at the next timestep using 
+    first-order Euler integration.
+
+    :param thetalist: n-vector of current joint variables
+    :param dthetalist: n-vector of current joint rates
+    :param ddthetalist: n-vector of current joint accelerations
+    :param dt: The timestep delta t (e.g., 0.001)
+    :return: (thetalistNext, dthetalistNext)
+    """
+
+    if dt is None:
+        dt = 0.1
+
+    thetalist = np.array(thetalist)
+    dthetalist = np.array(dthetalist)
+    ddthetalist = np.array(ddthetalist)
+
+    # Next Position: theta_new = theta + velocity * dt
+    thetalistNext = thetalist + dthetalist * dt
+
+    # Next Velocity: dtheta_new = dtheta + acceleration * dt
+    dthetalistNext = dthetalist + ddthetalist * dt
+
+    return thetalistNext, dthetalistNext
+
+'''__________________________________________________________________________________'''
+

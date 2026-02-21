@@ -1,4 +1,4 @@
-from Modern_Robotics_Py import Tools
+from Modern_Robotics_Py.Tools import *
 import numpy as np
 
 '''________________________________________________________________________________'''
@@ -41,12 +41,12 @@ def FKin(M, list, thetalist, frame = 'space'):
         """ Body Frame: T = M * Exp(B1) * Exp(B2) ...
             Loop 0 to n-1, multiply on the RIGHT """
         for i in range(n):
-            T = np.dot(T, Tools.MatrixExp6(Tools.VecTose3(np.array(list)[:, i] * thetalist[i])))
+            T = np.dot(T,   MatrixExp6(  VecTose3(np.array(list)[:, i] * thetalist[i])))
     elif frame.lower() == 'space':
         """Space Frame: T = Exp(S1) * ... * Exp(Sn) * M
            Loop n-1 down to 0, multiply on the LEFT """
         for i in range(n - 1, -1, -1):
-            T = np.dot(Tools.MatrixExp6(Tools.VecTose3(np.array(list)[:, i] * thetalist[i])), T)
+            T = np.dot(  MatrixExp6(  VecTose3(np.array(list)[:, i] * thetalist[i])), T)
             
     return T
 

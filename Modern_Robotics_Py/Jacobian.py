@@ -1,4 +1,4 @@
-from Modern_Robotics_Py import Tools
+from Modern_Robotics_Py.Tools import *
 import numpy as np
 
 '''__________________________________________________________________________________'''
@@ -38,15 +38,15 @@ def Jacobian(list, thetalist, frame='space'):
         ''' Space Jacobian: Js_i = Ad_{e^[S1]q1 ... e^[S_i-1]q_i-1} (Si)
             Moving from base to tip'''
         for i in range(1, n):
-            T = np.dot(T, Tools.MatrixExp6(Tools.VecTose3(np.array(list)[:, i - 1] * thetalist[i - 1])))
-            J[:, i] = np.dot(Tools.Adjoint(T), np.array(list)[:, i])
+            T = np.dot(T, MatrixExp6( VecTose3(np.array(list)[:, i - 1] * thetalist[i - 1])))
+            J[:, i] = np.dot( Adjoint(T), np.array(list)[:, i])
             
     elif frame.lower() == 'body':
         '''Body Jacobian: Jb_i = Ad_{e^-[Bn]qn ... e^-[B_i+1]q_i+1} (Bi)
            Moving from tip to base'''
         for i in range(n - 2, -1, -1):
-            T = np.dot(T, Tools.MatrixExp6(Tools.VecTose3(np.array(list)[:, i + 1] * -thetalist[i + 1])))
-            J[:, i] = np.dot(Tools.Adjoint(T), np.array(list)[:, i])
+            T = np.dot(T,  MatrixExp6( VecTose3(np.array(list)[:, i + 1] * -thetalist[i + 1])))
+            J[:, i] = np.dot( Adjoint(T), np.array(list)[:, i])
             
     else:
         raise ValueError("Frame must be 'space' or 'body'")
@@ -90,14 +90,14 @@ def ConvertJacobianFrame(J, T, target_frame='space'):
     if target_frame.lower() == 'space':
         '''Formula: Js = [Ad_Tsb] * Jb
            Input T should be Tsb (Transformation from space to body)'''
-        return np.dot(Tools.Adjoint(T), J)
+        return np.dot( Adjoint(T), J)
         
     elif target_frame.lower() == 'body':
         ''' Formula: Jb = [Ad_Tbs] * Js
             Input T should be Tbs (Transformation from body to space)
             Note: Ad(Tbs) is the same as Inverse(Ad(Tsb))'''
         T = np.linalg.inv(T)
-        return np.dot(Tools.Adjoint(T), J)
+        return np.dot( Adjoint(T), J)
     
     else:
         raise ValueError("target_frame must be 'space' or 'body'")

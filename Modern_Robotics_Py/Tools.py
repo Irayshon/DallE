@@ -446,3 +446,76 @@ def EulerStep(thetalist, dthetalist, ddthetalist, dt):
 
 '''__________________________________________________________________________________'''
 
+def parse_spatial_inertias_from_mujoco_xml(xml_path):
+    """
+    Parses a MuJoCo XML file and returns spatial inertia matrices for each body.
+
+    Returns
+    -------
+    G_dict : dict
+        Dictionary mapping body_name -> 6x6 spatial inertia matrix
+    """
+    tree = ET.parse(xml_path)
+    root = tree.getroot()
+
+    G_dict = {}
+
+    for body in root.iter('body'):
+        body_name = body.get('name')
+
+        inertial = body.find('inertial')
+        if inertial is None:
+            continue  # skip bodies without inertial data
+
+        # --- Extract inertial parameters ---
+        m = float(inertial.get('mass'))
+
+        com = np.fromstring(
+            inertial.get('pos', '0 0 0'),
+            sep=' ',
+            dtype=np.float64
+        )
+
+        diag_I = np.fromstring(
+            inertial.get('diaginertia'),
+            sep=' ',
+            dtype=np.float64
+        )
+
+        # --- Compute spatial inertia ---
+        G = SpatialInertia(m, com, diag_I)
+
+        G_dict[body_name] = G
+
+    return G_dict
+
+
+def SpatialInertia(m, com, diag_I):
+    """
+    Calculates the 6x6 spatial inertia matrix Gi in the joint frame.
+    Forces all calculations into double precision (float64).
+    """
+    # Cast inputs to double precision
+    m = np.float64(m)
+    com = np.array(com, dtype=np.float64)
+    diag_I = np.array(diag_I, dtype=np.float64)
+    
+    x, y, z = com
+    I_com = np.diag(diag_I)
+    
+    # Skew-symmetric matrix [c] for the COM offset
+    c_skew = np.array([[0, -z, y], 
+                       [z, 0, -x], 
+                       [-y, x, 0]], dtype=np.float64)
+    
+    # Parallel axis theorem: I_joint = I_com - m * [c]^2
+    # Note: np.dot on float64 arrays maintains double precision
+    I_joint = I_com - m * np.dot(c_skew, c_skew)
+    
+    G = np.zeros((6, 6), dtype=np.float64)
+    G[0:3, 0:3] = I_joint
+    G[0:3, 3:6] = m * c_skew
+    G[3:6, 0:3] = -m * c_skew
+    G[3:6, 3:6] = m * np.eye(3, dtype=np.float64)
+    
+    return G

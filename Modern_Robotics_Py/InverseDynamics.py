@@ -56,7 +56,7 @@ def InverseDynamics(thetalist, dthetalist, ddthetalist, g, Ftip, Mlist, Glist, S
                        Ai[:, i] * ddthetalist[i] + \
                        np.dot(   ad(Vi[:, i + 1]), Ai[:, i]) * dthetalist[i]
     
-
+    
     # --- Backward Pass ---
     for i in range(n - 1, -1, -1):
         # Sum forces
@@ -67,7 +67,7 @@ def InverseDynamics(thetalist, dthetalist, ddthetalist, g, Ftip, Mlist, Glist, S
         
         # Project link wrench onto screw axis
         taulist[i] = np.dot(np.array(Fi).T, Ai[:, i])
-        
+
     return taulist
 
 # def InverseDynamics(thetalist, dthetalist, ddthetalist, g, Ftip, Mlist, \

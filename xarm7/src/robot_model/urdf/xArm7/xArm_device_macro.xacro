@@ -31,7 +31,6 @@
 
     <!-- Load Common Material -->
     <xacro:include filename="$(find robot_model)/urdf/xArm7/common.material.xacro" />
-    <xacro:include filename="$(find robot_model)/urdf/xArm7/xArm7.gazebo.xacro" />
     <xacro:include filename="$(find robot_model)/urdf/xArm7/common.link.xacro" />
 
     
